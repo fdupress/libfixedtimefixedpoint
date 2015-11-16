@@ -53,17 +53,22 @@ uint64_t fixfrac(char* frac) {
     };
 
     uint64_t result = 0;
-    uint64_t extra = 0;
-
+    uint64_t extra  = 0;
+    uint8_t  mask   = 0x01;
+    
     for(int i = 0; i < 20; i++) {
-        if(frac[i] == '\0') {
-            break;
-        }
-
-        uint8_t digit = (frac[i] - (uint8_t) '0');
-
-        result += ((uint64_t) digit) * pow10_LUT[i];
-        extra  += ((uint64_t) digit) * pow10_LUT_extra[i];
+      uint8_t digit = (frac[i] - (uint8_t) '0');
+#ifndef ORIGINAL_FIXFRAC
+      mask   &= (frac[i] != '\0');
+      result += mask * ((uint64_t) digit) * pow10_LUT[i];
+      extra  += mask * ((uint64_t) digit) * pow10_LUT_extra[i];
+#else   /* !ORIGINAL_FIXFRAC */
+      if(frac[i] == '\0') {
+        break;
+      }
+      result += ((uint64_t) digit) * pow10_LUT[i];
+      extra  += ((uint64_t) digit) * pow10_LUT_extra[i];
+#endif /* !ORIGINAL_FIXFRAC */
     }
 
     // We're going to round result to even, using extra as the lower bits.
